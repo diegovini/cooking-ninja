@@ -7,7 +7,7 @@ import ThemeSelector from './ThemeSelector';
 
 
 export default function Navbar() {
-  const { color, changeColor } = useTheme();
+  const { color } = useTheme();
   
   return (
     <div className='navbar' style={{background:color}} >      
