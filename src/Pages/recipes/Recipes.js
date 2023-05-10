@@ -1,17 +1,41 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
 import { ThemeContext } from '../../Context/ThemeContext';
-import { useFetch } from '../../Hooks/useFetch';
 import { useTheme } from '../../Hooks/useTheme';
 import './Recipes.css';
+import { projectFireStore } from '../../Firebase/config'
 
 
 
 export default function Recipes() {
-    const {id} = useParams();
-    const {mode} = useTheme(ThemeContext)
-    const url = `http://localhost:3000/recipes/${id}`;
-    const {data: recipe, isPending, error} = useFetch(url)        
+    const { id } = useParams();
+    const { mode } = useTheme(ThemeContext)
+
+    const [recipe, setRecipe] = useState(null)
+    const [isPending, setIsPending] = useState(false)
+    const [error, setError] = useState(null)
+    
+    useEffect(()=>{
+      setIsPending(true)
+      const unsub = projectFireStore.collection('recipes').doc(id).onSnapshot(doc => {
+        if(doc.exists){ 
+          setIsPending(false);
+          setRecipe(doc.data())
+        }else{
+          setIsPending(false);
+          setError("Could not find that recipe")
+        }
+      })
+
+      return () => unsub();
+      
+    },[id]);
+
+    const handleClick = ()  => {
+      projectFireStore.collection('recipes').doc(id).update({
+        title:'Something different2222222'
+      })
+      }
 
     return (
     <div className={`recipe ${mode}`}>
@@ -27,6 +51,7 @@ export default function Recipes() {
         ))}
         </ul>
         <p className="method">{recipe.method}</p>
+        <button onClick={() => handleClick()}>Update me</button>
       </>
       )}
     </div>

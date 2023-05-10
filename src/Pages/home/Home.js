@@ -11,15 +11,24 @@ export default function Home() {
   useEffect(() =>{
     setIsPending(true);
 
-    projectFireStore.collection('recipes').get()
-    .then((snapShot) => {
-    //  setData(snapShot)
-      //setIsPending(false);
+    const unsub = projectFireStore.collection('recipes').onSnapshot((snapShot) => {    
       if(snapShot.empty){
         setError('No recipes to load');
         setIsPending(false);
+      }else{
+        let results = [];
+        snapShot.docs.forEach(doc => {
+          results.push({id: doc.id, ...doc.data()})
+        })
+        setData(results);
+        setIsPending(false);
       }
-    })    
+    }, (err) => {
+      setError(err.message)
+      setIsPending(false)
+    })
+
+    return () => unsub();
 
   }
   ,[]);
